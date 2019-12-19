@@ -100,9 +100,6 @@ class FromArrayBenchmark(benchmark.Benchmark):
     def time_diag(self):
         self.xp.diag(self.array)
 
-    def time_diagflat(self):
-        self.xp.diagflat(self.array)
-
     def time_triu(self):
         self.xp.triu(self.array)
 
