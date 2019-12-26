@@ -7,8 +7,7 @@ class CreationBenchmark(benchmark.NumpyCompareBenchmark):
 
     nelems = range(0, 500000, 100000)
 
-    def setup(self, bench_name, xp, nelems):
-        self.xp = xp
+    def setup(self, bench_name, nelems):
         self.size = nelems
 
     def time_empty(self):
@@ -28,8 +27,7 @@ class CreationBenchmarkSquares(benchmark.NumpyCompareBenchmark):
 
     nelems = range(0, 50000, 10000)
 
-    def setup(self, bench_name, xp, nelems):
-        self.xp = xp
+    def setup(self, bench_name, nelems):
         self.size = nelems
 
     def time_eye(self):
@@ -45,10 +43,8 @@ class StackingBenchmark(benchmark.NumpyCompareBenchmark):
 
     narrays = [2]
 
-    def setup(self, bench_name, xp, nelems, narrays):
-        # Use a generator expresion to save memory
-        self.xp = xp
-        self.inputs = [xp.arange(nelems) for i in range(narrays)]
+    def setup(self, bench_name, nelems, narrays):
+        self.inputs = [self.xp.arange(nelems) for i in range(narrays)]
 
     def args_key(self, **kwargs):
         # Need to use kwargs as some of the
@@ -68,13 +64,12 @@ class StackingBenchmark(benchmark.NumpyCompareBenchmark):
         self.xp.dstack(self.inputs)
 
 
-class ArrayBenchmark(benchmark.NumpyCompareBenchmark):
+class ArrayBenchmark(benchmark.CupyBenchmark):
 
     shape = [(0,), (1, 1), (100, 100),
              (100, 100, 100), (100, 100, 100, 100)]
 
-    def setup(self, bench_name, xp, shape):
-        self.xp = xp
+    def setup(self, bench_name, shape):
         self.array = numpy.zeros(shape)
 
     def time_from_numpy(self):
@@ -85,9 +80,8 @@ class FromArrayBenchmark(benchmark.NumpyCompareBenchmark):
 
     shape = [(0,), (1, 1), (100, 100), (200, 200)]
 
-    def setup(self, bench_name, xp, shape):
-        self.xp = xp
-        self.array = xp.zeros(shape)
+    def setup(self, bench_name, shape):
+        self.array = self.xp.zeros(shape)
 
     def teardown(self):
         self.array = None
@@ -111,10 +105,8 @@ class TemporariesBenchmark(benchmark.NumpyCompareBenchmark):
 
     size = (10000, 20000, 50000, 100000, 500000)
 
-    def setup(self, bench_name, xp, size):
-        # Use a generator expresion to save memory
-        self.xp = xp
-        self.input_arrays = (xp.ones(size), xp.ones(size))
+    def setup(self, bench_name, size):
+        self.input_arrays = (self.xp.ones(size), self.xp.ones(size))
 
     def teardown(self):
         self.input_arrays = None
