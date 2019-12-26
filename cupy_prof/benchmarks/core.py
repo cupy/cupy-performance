@@ -3,7 +3,7 @@ import numpy
 from cupy_prof.benchmarks import benchmark
 
 
-class CreationBenchmark(benchmark.Benchmark):
+class CreationBenchmark(benchmark.NumpyCompareBenchmark):
 
     nelems = range(0, 500000, 100000)
 
@@ -24,7 +24,7 @@ class CreationBenchmark(benchmark.Benchmark):
         self.xp.arange(self.size)
 
 
-class CreationBenchmarkSquares(benchmark.Benchmark):
+class CreationBenchmarkSquares(benchmark.NumpyCompareBenchmark):
 
     nelems = range(0, 50000, 10000)
 
@@ -39,7 +39,7 @@ class CreationBenchmarkSquares(benchmark.Benchmark):
         self.xp.identity(self.size)
 
 
-class StackingBenchmark(benchmark.Benchmark):
+class StackingBenchmark(benchmark.NumpyCompareBenchmark):
 
     nelems = range(0, 1000000, 200000)
 
@@ -68,7 +68,7 @@ class StackingBenchmark(benchmark.Benchmark):
         self.xp.dstack(self.inputs)
 
 
-class ArrayBenchmark(benchmark.Benchmark):
+class ArrayBenchmark(benchmark.NumpyCompareBenchmark):
 
     shape = [(0,), (1, 1), (100, 100),
              (100, 100, 100), (100, 100, 100, 100)]
@@ -81,7 +81,7 @@ class ArrayBenchmark(benchmark.Benchmark):
         self.xp.array(self.array)
 
 
-class FromArrayBenchmark(benchmark.Benchmark):
+class FromArrayBenchmark(benchmark.NumpyCompareBenchmark):
 
     shape = [(0,), (1, 1), (100, 100), (200, 200)]
 
@@ -107,7 +107,7 @@ class FromArrayBenchmark(benchmark.Benchmark):
         self.xp.tril(self.array)
 
 
-class TemporariesBenchmark(benchmark.Benchmark):
+class TemporariesBenchmark(benchmark.NumpyCompareBenchmark):
 
     size = (10000, 20000, 50000, 100000, 500000)
 

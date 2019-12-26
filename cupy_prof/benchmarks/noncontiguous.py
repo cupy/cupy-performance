@@ -6,7 +6,7 @@ from cupy_prof.benchmarks import benchmark
 
 
 # TODO Get these from CuPy benchmarks?
-class ReductionBenchmark(benchmark.Benchmark):
+class ReductionBenchmark(benchmark.CupyBenchmark):
 
     datatype = [numpy.float64, numpy.complex128]
 

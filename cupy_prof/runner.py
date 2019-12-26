@@ -19,32 +19,33 @@ class Runner(object):
             return self._create_key_from_args(case[0], arg_names)
         return str(case)
 
-    def run(self, report, xp):
+    def run(self, report):
         benchmark = self.benchmark
         object_methods = [method_name
                           for method_name in dir(benchmark)
                           if 'time_' in method_name]
+        arg_names = ['_xp']
         if hasattr(benchmark, 'setup'):
-            arg_names = inspect.getfullargspec(benchmark.setup).args[3:]
+            arg_names += inspect.getfullargspec(benchmark.setup).args[2:]
         args = [getattr(benchmark, arg) for arg in arg_names]
         for method_name in object_methods:
             method = getattr(benchmark, method_name)
-            # ignore self
-            bench_times = {}
 
             # Do combinations of the lists
             cases = itertools.product(*args)
             for case in cases:
                 kwargs = {name: arg for name, arg in zip(arg_names, case)}
+                benchmark.xp = kwargs['_xp']
+                del kwargs['_xp']
                 if hasattr(benchmark, 'setup'):
-                    benchmark.setup(method_name, xp, **kwargs)
+                    benchmark.setup(method_name, **kwargs)
                 key = self._create_key_from_args(case, arg_names)
                 print('{:20} - case {:10}'.format(method_name, key), end='')
                 times = cupyx.time.repeat(method, n=5, n_warmup=10, name='')
-                bench_times[key] = {'cpu': times.cpu_times,
-                                    'gpu': times.gpu_times}
+                bench_times = {'cpu': times.cpu_times,
+                               'gpu': times.gpu_times}
                 print(times)
-            report(method_name, bench_times)
+                report(method_name, key, bench_times, benchmark.xp.__name__)
         if hasattr(benchmark, 'teardown'):
             benchmark.teardown()
         gc.collect()

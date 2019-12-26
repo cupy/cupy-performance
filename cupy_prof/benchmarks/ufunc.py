@@ -23,7 +23,7 @@ ufuncs = ['abs', 'absolute', 'add', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
           'sqrt', 'square', 'subtract', 'tan', 'tanh', 'true_divide', 'trunc']
 
 
-class UfuncBenchmark(benchmark.Benchmark):
+class UfuncBenchmark(benchmark.NumpyCompareBenchmark):
 
     shapes = ((100, 100), (200, 200), (300, 300), (400, 400),(500, 500))
 
@@ -32,21 +32,20 @@ class UfuncBenchmark(benchmark.Benchmark):
         for ufunc in ufuncs:
             exec('self.time_{} = self.run_ufunc'.format(ufunc))
 
-    def setup(self, bench_name, xp, shapes):
-        self.xp = xp
-        self.f = getattr(xp, bench_name.split('time_')[1])
-        self.args = (_random_matrix(shapes, xp),) * self.f.nin
+    def setup(self, bench_name, shapes):
+        self.f = getattr(self.xp, bench_name.split('time_')[1])
+        self.args = (_random_matrix(shapes, self.xp),) * self.f.nin
 
-    def args_key(self, shapes):
+    def args_key(self, **kwargs):
         # Need to use kwargs as some of the
         # elements may not be used in all benchmarks
-        return shapes[0]
+        return kwargs['shapes'][0]
 
     def run_ufunc(self):
         self.f(*self.args)
 
 
-class BroadcastBenchmark(benchmark.Benchmark):
+class BroadcastBenchmark(benchmark.NumpyCompareBenchmark):
     def setup(self):
         shapes_a = ()
         shapes_b = ()

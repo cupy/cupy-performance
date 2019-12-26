@@ -6,7 +6,7 @@ import cupy_prof
 
 def run_bench(bench_class):
     bench = benchmark()
-    cupy_prof.Measure(bench, [cupy, numpy]).measure()
+    cupy_prof.Measure(bench).measure()
 
 
 if __name__ == '__main__':
@@ -16,8 +16,8 @@ if __name__ == '__main__':
                   # cupy_prof.benchmarks.core.ArrayBenchmark,
                   # cupy_prof.benchmarks.core.FromArrayBenchmark,
                   # cupy_prof.benchmarks.core.TemporariesBenchmark,
-                  # cupy_prof.benchmarks.ufunc.UfuncBenchmark]
-                  cupy_prof.benchmarks.noncontiguous.ReductionBenchmark]
+                  cupy_prof.benchmarks.ufunc.UfuncBenchmark]
+                  # cupy_prof.benchmarks.noncontiguous.ReductionBenchmark]
 
     for benchmark in benchmarks:
         print('Running', benchmark.__name__)
