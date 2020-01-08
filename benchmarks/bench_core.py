@@ -1,14 +1,11 @@
 import numpy
 
-from cupy_prof.benchmarks import benchmark
+from cupy_prof import benchmark
 
 
 class CreationBenchmark(benchmark.NumpyCompareBenchmark):
 
-    nelems = range(0, 500000, 100000)
-
-    def setup(self, bench_name, nelems):
-        self.size = nelems
+    params = {'size': range(0, 500000, 100000)}
 
     def time_empty(self):
         self.xp.array([])
@@ -22,13 +19,12 @@ class CreationBenchmark(benchmark.NumpyCompareBenchmark):
     def time_arange(self):
         self.xp.arange(self.size)
 
+    def args_key(self):
+        return self.size
 
 class CreationBenchmarkSquares(benchmark.NumpyCompareBenchmark):
 
-    nelems = range(0, 50000, 10000)
-
-    def setup(self, bench_name, nelems):
-        self.size = nelems
+    params = {'size': range(0, 50000, 10000)}
 
     def time_eye(self):
         self.xp.eye(self.size)
@@ -36,20 +32,22 @@ class CreationBenchmarkSquares(benchmark.NumpyCompareBenchmark):
     def time_identity(self):
         self.xp.identity(self.size)
 
+    def args_key(self):
+        return self.size
 
 class StackingBenchmark(benchmark.NumpyCompareBenchmark):
 
-    nelems = range(0, 1000000, 200000)
+    params = {'size': range(0, 500000, 100000),
+              'narrays': [2]}
 
-    narrays = [2]
-
-    def setup(self, bench_name, nelems, narrays):
-        self.inputs = [self.xp.arange(nelems) for i in range(narrays)]
+    def setup(self, bench_name):
+        self.inputs = [self.xp.arange(self.size)
+                       for i in range(self.narrays)]
 
     def args_key(self, **kwargs):
         # Need to use kwargs as some of the
         # elements may not be used in all benchmarks
-        return kwargs['nelems']
+        return self.size
 
     def teardown(self):
         self.inputs = None
@@ -63,25 +61,29 @@ class StackingBenchmark(benchmark.NumpyCompareBenchmark):
     def time_dstack(self):
         self.xp.dstack(self.inputs)
 
+    def args_key(self):
+        return self.size
 
 class ArrayBenchmark(benchmark.CupyBenchmark):
 
-    shape = [(0,), (1, 1), (100, 100),
-             (100, 100, 100), (100, 100, 100, 100)]
+    params = {'shape': [(0,), (1, 1), (100, 100),
+              (100, 100, 100), (100, 100, 100, 100)]}
 
-    def setup(self, bench_name, shape):
-        self.array = numpy.zeros(shape)
+    def setup(self, bench_name):
+        self.array = numpy.zeros(self.shape)
 
     def time_from_numpy(self):
         self.xp.array(self.array)
 
+    def args_key(self):
+        return '{}_x'.format(self.shape, len(self.shape))
 
 class FromArrayBenchmark(benchmark.NumpyCompareBenchmark):
 
-    shape = [(0,), (1, 1), (100, 100), (200, 200)]
+    params = {'shape': [(0,), (1, 1), (100, 100), (200, 200)]}
 
-    def setup(self, bench_name, shape):
-        self.array = self.xp.zeros(shape)
+    def setup(self, bench_name):
+        self.array = self.xp.zeros(self.shape)
 
     def teardown(self):
         self.array = None
@@ -89,7 +91,7 @@ class FromArrayBenchmark(benchmark.NumpyCompareBenchmark):
     def args_key(self, **kwargs):
         # Need to use kwargs as some of the
         # elements may not be used in all benchmarks
-        return kwargs['shape'][0]
+        return self.shape[0]
 
     def time_diag(self):
         self.xp.diag(self.array)
@@ -103,10 +105,11 @@ class FromArrayBenchmark(benchmark.NumpyCompareBenchmark):
 
 class TemporariesBenchmark(benchmark.NumpyCompareBenchmark):
 
-    size = (10000, 20000, 50000, 100000, 500000)
+    params = {'size': (10000, 20000, 50000, 100000, 500000)}
 
-    def setup(self, bench_name, size):
-        self.input_arrays = (self.xp.ones(size), self.xp.ones(size))
+    def setup(self, bench_name):
+        self.input_arrays = (self.xp.ones(self.size),
+                             self.xp.ones(self.size))
 
     def teardown(self):
         self.input_arrays = None
@@ -114,7 +117,7 @@ class TemporariesBenchmark(benchmark.NumpyCompareBenchmark):
     def args_key(self, **kwargs):
         # Need to use kwargs as some of the
         # elements may not be used in all benchmarks
-        return kwargs['size']
+        return self.size
 
     def time_temporary(self):
         a, b = self.input_arrays

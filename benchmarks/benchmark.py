@@ -6,11 +6,11 @@ import cupy_prof
 
 class CupyBenchmark(object):
     _xp = [cupy]
-    _plots = {'facet': {'col': 'name', 'hue': 'backend'},
+    _plots = [{'facet': {'col': 'name', 'hue': 'backend'},
               'plot': 'line',
               'x': 'key',
               'y': 'time',
-              'yscale': 'log'}
+              'yscale': 'log'}]
 
     def process_dataframe(self, df):
         # We dont need a numpy-gpu time, clean it.

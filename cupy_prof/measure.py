@@ -1,4 +1,3 @@
-import numpy
 import pandas as pd
 
 import cupy_prof  # NOQA
@@ -35,22 +34,3 @@ class Measure(object):
             df.to_csv('{}.csv'.format(bench_name))
         if plot:
             self.benchmark.plot(df)
-
-    def _get_lines_and_errors(self, series):
-        lines = []
-        # TODO(ecastill) cleaner way to get the keys
-        keys = None
-        for module in series:
-            times = series[module]
-            keys = sorted(times.keys())
-            # CPU & GPU Times
-            labels = ['cpu', 'gpu']
-            for l in labels:
-                means = numpy.array([times[key][l].mean() for key in keys])
-                std = numpy.array([times[key][l].std() for key in keys])
-                mins = numpy.array([times[key][l].min() for key in keys])
-                maxes = numpy.array([times[key][l].max() for key in keys])
-                lines.append(('{}-{}'.format(l, module),
-                              means, std, mins, maxes))
-        # Lets do this using the dataframe
-        return keys, lines
