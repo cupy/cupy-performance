@@ -8,8 +8,6 @@ from cupy_prof import benchmark
 # TODO Get these from CuPy benchmarks?
 class ReductionBenchmark(benchmark.CupyBenchmark):
 
-    datatype = [numpy.float64, numpy.complex128]
-
     params = {'case': [
                        # reduce at head axes
                        {'shape': (200, 400, 300), 'trans': (2, 1, 0),
