@@ -22,17 +22,28 @@ class SnsPlotter(Plotter):
         properties = self.properties
         plot_fn = plotfuncs[properties['plot']]
         sns.set()
+        num_plots = df[properties['facet']['col']].nunique()
         if 'facet' in properties:
             facet = properties['facet']
-            g = sns.FacetGrid(df, col=facet['col'], hue=facet['hue'],
-                              col_wrap=4, sharey=False, sharex=False)
-            ax = g.map(plot_fn, properties['x'], properties['y'])
-            if 'yscale' in properties:
-                ax.set(yscale=properties['yscale'])
+            if properties['plot'] == 'bar':
+                g = sns.catplot(data=df, x=properties['x'],
+                                y=properties['y'], hue=facet['hue'],
+                                col=facet['col'],
+                                kind=properties['plot'],
+                                col_wrap=min(num_plots, 4),
+                                sharey=False, sharex=False)
+            else:
+                g = sns.FacetGrid(df, col=facet['col'], hue=facet['hue'],
+                                  col_wrap=min(num_plots, 4),
+                                  sharey=False, sharex=False,
+                                  height=5)
+                ax = g.map(plot_fn, properties['x'], properties['y'])
+                if 'yscale' in properties:
+                    ax.set(yscale=properties['yscale'])
+                g.add_legend()
         else:
             plot_fn(x=properties['x'], y=properties['y'], data=df)
 
-        g.add_legend()
         for ax in g.axes.flatten():
             ax.set_title(ax.get_title().split('_')[1])
             ax.set_xticklabels(ax.get_xticklabels(), rotation=45,
