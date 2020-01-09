@@ -16,20 +16,27 @@ class Collector(object):
     def __init__(self):
         self.benchmarks = []
 
+    def process_file(self, path):
+        module = load_module('', path)
+        self.filter_benchmarks(module)
+        sys.stdout.write("\n")
+
     def collect(self, paths):
         # Access the paths, import the bench_*py files and
         # Access the Classes inside
         file_regex = re.compile(r'^bench_.+py$')
         for path in paths:
-            for root, _, files in os.walk(path):
-                for file_n in files:
-                    if file_regex.match(file_n) is None:
-                        continue
-                    b_path = os.path.join(root, file_n)
-                    print(b_path)
-                    module = load_module('', b_path)
-                    self.filter_benchmarks(module)
-                    sys.stdout.write("\n")
+            if path[-3:] == '.py':
+                print(path)
+                self.process_file(path)
+            else:
+                for root, _, files in os.walk(path):
+                    for file_n in files:
+                        if file_regex.match(file_n) is None:
+                            continue
+                        b_path = os.path.join(root, file_n)
+                        print(b_path)
+                        self.process_file(b_path)
 
     def filter_benchmarks(self, module):
         for name, obj in inspect.getmembers(module):
