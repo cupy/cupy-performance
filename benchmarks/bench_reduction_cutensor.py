@@ -21,8 +21,12 @@ class CubCuTensorReductionBenchmark(benchmark.CupyBenchmark):
                        # out_axis = ()
                        {'shape': (200, 300, 400),
                         'axis': (0, 1, 2), 'name': 'batch'}],
-              'datatype': ['float64', 'float32'],
+              'datatype': ['float64'],
               'mode': ['naive', 'cub', 'cutensor']}
+
+
+    def __init__(self):
+        self._plots[0]['plot'] = 'bar'
 
     def setup(self, bench_name):
         a = testing.shaped_random(self.case['shape'], self.xp, self.datatype)
@@ -48,4 +52,4 @@ class CubCuTensorReductionBenchmark(benchmark.CupyBenchmark):
         self.out = None
 
     def args_key(self):
-        return '{} {} {}'.format(self.case['name'], self.mode, self.datatype)
+        return '{} {}'.format(self.case['name'], self.mode)

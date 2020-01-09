@@ -35,4 +35,6 @@ class SnsPlotter(Plotter):
         g.add_legend()
         for ax in g.axes.flatten():
             ax.set_title(ax.get_title().split('_')[1])
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=45,
+                               horizontalalignment='right')
         g.fig.savefig("{}_{}.png".format(name, properties['y']))
