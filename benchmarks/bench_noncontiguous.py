@@ -39,4 +39,4 @@ class ReductionBenchmark(benchmark.CupyBenchmark):
         self.array = None
 
     def args_key(self):
-        return self.case['name']
+        return '{}-{}'.format(self.case['name'], self.datatype)
