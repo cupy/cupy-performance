@@ -34,3 +34,4 @@ class Measure(object):
             df.to_csv('{}.csv'.format(bench_name))
         if plot:
             self.benchmark.plot(df)
+        return df
