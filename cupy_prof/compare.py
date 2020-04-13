@@ -1,23 +1,12 @@
-import multiprocessing
 import os
 import subprocess
+import pickle
 
 import cupy_prof
 
 
 class _GitCommandError(Exception):
     pass
-
-
-def _run_benchmarks(benchmarks, queue):
-    collector = cupy_prof.Collector()
-    collector.collect(benchmarks)
-    dfs = {}
-    for bench_class in collector.benchmarks:
-        bench = bench_class()
-        df = cupy_prof.Measure(bench).measure(plot=False, csv=False)
-        dfs[bench_class.__name__] = df
-    queue.put(dfs)
 
 
 def _git(repository, command, stdout=None, stderr=None):
@@ -40,8 +29,32 @@ def _git(repository, command, stdout=None, stderr=None):
         stdout = stdout.decode('utf8')
 
 
-def _build(repository, command):
-    subprocess.check_call(command)
+script = """virtualenv venv-{commit};
+source venv-{commit}/bin/activate;
+pip install pandas
+pip install seaborn
+pip install Cython
+pip install -e {repository} -vvv;
+python -c 'import cupy; print(cupy.__version__)';
+# Run the benchmarks
+python prof.py --dump-pickle {commit}.pkl -- {benchmarks}
+"""
+
+
+def _create_environment(repository, commit, benchmarks):
+    # Creates a virtual env that is run with the above command
+    # command = ['virtualenv', '/tmp/commit']
+    # subprocess.check_output(command)
+    with open('test.sh', 'w') as f:
+        f.write(script.format(commit=commit, repository=repository,
+                              benchmarks=' '.join(benchmarks)))
+    proc = subprocess.Popen(['bash', 'test.sh'], stdout=subprocess.PIPE)
+    rc = None
+    while rc is None:
+        output = proc.stdout.readline()
+        if output:
+            print(output.strip().decode('utf8'))
+        rc = proc.poll()
 
 
 class Comparer(object):
@@ -54,39 +67,29 @@ class Comparer(object):
             it is used to call prof.py recursively to evaluate the actual
             benchmarks
     """
-    def __init__(self, commits, repository, benchmarks):
+    def __init__(self, commits, repos, benchmarks):
         self.commits = commits
-        self.repository = repository
+        if len(repos) == 1:
+            repos = repos * len(commits)
+        self.repos = repos
         self.benchmarks = benchmarks
 
-    def compare(self):
+    def compare(self, csv=True, plot=True, force_clean=True):
         # We use spawn to reload the newly installed environment
-        multiprocessing.set_start_method('spawn')
         dfs = []
-        for commit in self.commits:
-            # _git(self.repository, ['clean', '-f', '-x'])
-            # _git(self.repository, ['checkout', commit])
-            # # Install the module calling pip
-            # # TODO(ecastill) abstract this by adding config files
-            # # with build commands
-            # _build(self.repository, ['pip', 'install', '-e',
-            #        self.repository])
-
-            try:
-                _build(self.repository, ['pip', 'uninstall', commit,
-                       self.repository])
-            except Exception:
-                pass
-            _build(self.repository, ['pip', 'install', commit])
-
-            # Now we need to spawn a new process that gets the
-            # newly installed module and returns the benchmark results
-            queue = multiprocessing.Queue()
-            args = (self.benchmarks, queue)
-            bench = multiprocessing.Process(target=_run_benchmarks, args=args)
-            bench.start()
-            dfs.append(queue.get())
-            bench.join()
+        for commit, repo in zip(self.commits, self.repos):
+            if force_clean:
+                _git(repo, ['clean', '-f', '-x'])
+            _git(repo, ['checkout', commit])
+            # Install the module calling pip
+            # TODO(ecastill) abstract this by adding config files
+            # with build commands
+            # If the module is installed in editable mode
+            # It won't be loadable from this interpreter instance
+            #
+            _create_environment(repo, commit, self.benchmarks)
+            with open('{}.pkl'.format(commit), 'rb') as picklefile:
+                dfs.append(pickle.load(picklefile))
 
         dfs = self._compare_results(dfs)
         # Now we generate the plots or csvs if needed
@@ -97,7 +100,10 @@ class Comparer(object):
         for bench_class in collector.benchmarks:
             bench_classes[bench_class.__name__] = bench_class()
         for bench in dfs:
-            bench_classes[bench].plot(dfs[bench])
+            if csv:
+                dfs[bench].to_csv('{}.csv'.format(bench))
+            if plot:
+                bench_classes[bench].plot(dfs[bench])
 
     def _compare_results(self, dfs):
         # We create a new df that joins all the experiments
@@ -113,11 +119,4 @@ class Comparer(object):
                 df['backend'] = commit + '-' + df['backend'].astype(str)
                 joined_df = base_df.append(df)
             res[bench] = joined_df
-            # Plot the benchmarks
         return res
-
-
-if __name__ == '__main__':
-    # run_args = ['python', 'prof.py', 'benchmarks']
-    Comparer(['cupy-cuda102==8.0.0b1', 'cupy-cuda102==8.0.0a1'],
-             '/home/ecastill/em-cupy/', ['benchmarks/bench_raw.py']).compare()

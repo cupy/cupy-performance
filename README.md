@@ -68,3 +68,17 @@ $ python prof.py benchmarks
 ```
 Alternatively, if a directory is specified, it will collect all the benchmarks with the file name
 starting with `bench_` as in pytest.
+
+### Comparing different commits or branches
+
+```
+python prof.py --repo /home/ecastill/em-cupy --commits master v7 --plot -- benchmarks/bench_ufunc_cupy.py
+```
+
+Is it possible to compare different commits or branches of a repository.
+This script will automatically checkout the branch and compile cupy, but it will install it in a virtual environment
+`virtualenv` is required for this functionaility.
+
+`--repo` can specify a common repo for all the commits, or a list of repositories, one per-commit, so that build time
+can be reduced.
+

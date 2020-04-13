@@ -1,7 +1,5 @@
 import itertools
 
-import cupy
-import cupyx
 import gc
 
 
@@ -26,6 +24,10 @@ class Runner(object):
         return str(case)
 
     def run(self, report):
+        import cupy
+        import cupyx
+
+        print(cupy.__version__)
         benchmark = self.benchmark
         object_methods = [method_name
                           for method_name in dir(benchmark)
