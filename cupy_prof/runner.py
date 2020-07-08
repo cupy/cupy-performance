@@ -51,7 +51,8 @@ class Runner(object):
                     benchmark.setup(method_name)
                 key = self._create_key_from_args(case)
                 print('{:20} - case {:10}'.format(method_name, key), end='')
-                times = cupyx.time.repeat(method, n=10, n_warmup=10, name='')
+                times = cupyx.time.repeat(
+                    method, n_repeat=10, n_warmup=10, name='')
                 bench_times = {'cpu': times.cpu_times,
                                'gpu': times.gpu_times}
                 print(times)
