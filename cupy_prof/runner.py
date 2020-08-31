@@ -39,10 +39,7 @@ class Runner(object):
             # The benchmark might be tested on different modules
             # we explicitly track the model to easily operate with
             # the dataframes
-            xp = cupy
-            if hasattr(benchmark, '_xp'):
-                xp = benchmark._xp
-            args['xp'] = xp
+            args['xp'] = getattr(benchmark, '_xp', cupy)
             for case in product_dict(**args):
                 for arg in case:
                     setattr(benchmark, arg, case[arg])
@@ -50,9 +47,9 @@ class Runner(object):
                 if hasattr(benchmark, 'setup'):
                     benchmark.setup(method_name)
                 key = self._create_key_from_args(case)
-                print('{:20} - case {:10}'.format(method_name, key), end='')
+                name = '{:20} - case {:10}'.format(method_name, key)
                 times = cupyx.time.repeat(
-                    method, n_repeat=10, n_warmup=10, name='')
+                    method, n_repeat=10, n_warmup=10, name=name)
                 bench_times = {'cpu': times.cpu_times,
                                'gpu': times.gpu_times}
                 print(times)
