@@ -47,8 +47,10 @@ class Runner(object):
                 for arg in case:
                     setattr(benchmark, arg, case[arg])
                 del case['xp']
+
                 if hasattr(benchmark, 'setup'):
                     benchmark.setup(method_name)
+
                 key = self._create_key_from_args(case)
                 print('{:20} - case {:10}'.format(method_name, key), end='')
                 times = cupyx.time.repeat(
@@ -57,6 +59,7 @@ class Runner(object):
                                'gpu': times.gpu_times}
                 print(times)
                 report(method_name, key, bench_times, benchmark.xp.__name__)
-        if hasattr(benchmark, 'teardown'):
-            benchmark.teardown()
+
+                if hasattr(benchmark, 'teardown'):
+                    benchmark.teardown()
         gc.collect()
