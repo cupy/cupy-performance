@@ -29,6 +29,7 @@ class Measure(object):
         # Process the dataframe according to the benchmark
         df = self.benchmark.process_dataframe(df)
         df = df.explode('time')
+        df.loc[df['dev']=='gpu', 'run'] = df.loc[df['dev']=='gpu'].groupby(['key']).cumcount()
         # Save csv
         if csv:
             bench_name = self.benchmark.__class__.__name__
