@@ -12,7 +12,11 @@ class Measure(object):
 
     def capture(self, name, key, times, xp_name):
         for dev in times:
-            for i, time in enumerate(times[dev]):
+            if dev == 'gpu':
+                dev_times = times[dev][0]
+            else:  # dev == 'cpu'
+                dev_times = times[dev]
+            for i, time in enumerate(dev_times):
                 self.df['xp'].append(xp_name)
                 self.df['backend'].append('{}-{}'.format(
                                           xp_name, dev))
@@ -28,8 +32,6 @@ class Measure(object):
         df = pd.DataFrame(self.df)
         # Process the dataframe according to the benchmark
         df = self.benchmark.process_dataframe(df)
-        df = df.explode('time')
-        df.loc[df['dev']=='gpu', 'run'] = df.loc[df['dev']=='gpu'].groupby(['key']).cumcount()
         # Save csv
         if csv:
             bench_name = self.benchmark.__class__.__name__
