@@ -12,7 +12,11 @@ class Measure(object):
 
     def capture(self, name, key, times, xp_name):
         for dev in times:
-            for i, time in enumerate(times[dev]):
+            if dev == 'gpu':
+                dev_times = times[dev][0]
+            else:  # dev == 'cpu'
+                dev_times = times[dev]
+            for i, time in enumerate(dev_times):
                 self.df['xp'].append(xp_name)
                 self.df['backend'].append('{}-{}'.format(
                                           xp_name, dev))
