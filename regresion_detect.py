@@ -27,14 +27,14 @@ def main():
     mean_2 = sanitize_df(df_2)
     comp = join_dfs(mean_1, mean_2)
     perf = calc_relative_perf(comp)
-    print(perf)
+    print(perf.to_string())
     # Find columns where performance has degraded at least 5%
     degrade = perf[perf["perf"] >= 1.05]
     if degrade.shape[0] == 0:
         print("No perf degradation")
     else:
         print("Performance degradation detected for")
-        print(degrade)
+        print(degrade.to_string())
         raise RuntimeError("Performance regresion")
 
 
