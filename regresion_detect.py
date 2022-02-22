@@ -28,8 +28,8 @@ def main():
     comp = join_dfs(mean_1, mean_2)
     perf = calc_relative_perf(comp)
     print(perf.to_string())
-    # Find columns where performance has degraded at least 5%
-    degrade = perf[perf["perf"] >= 1.05]
+    # Find columns where performance has degraded at least 25%
+    degrade = perf[perf["perf"] >= 1.25]
     if degrade.shape[0] == 0:
         print("No perf degradation")
     else:
