@@ -6,7 +6,7 @@ import pandas
 def sanitize_df(df):
     df = df.iloc[:, 1:].drop("run", axis=1)
     g_df = df.groupby(["name", "key", "dev"])
-    mean = g_df.mean().reset_index()
+    mean = g_df.min().reset_index()
     return mean
 
 
