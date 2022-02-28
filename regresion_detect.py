@@ -28,6 +28,8 @@ def main():
     comp = join_dfs(mean_1, mean_2)
     perf = calc_relative_perf(comp)
     print(perf.to_string())
+    # Remove colunmns with a time less > 1e-4 s
+    perf = perf[(perf["time_x"] >= 1e-4) & (perf["time_y"] >= 1e-4)]
     # Find columns where performance has degraded at least 25%
     degrade = perf[perf["perf"] >= 1.25]
     if degrade.shape[0] == 0:
